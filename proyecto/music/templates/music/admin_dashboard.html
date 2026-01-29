@@ -1,0 +1,162 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+{% block title %}Panel de Administrador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'music/css/crud.css' %}">
+<style>
+    html,
+    body {
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="library-container">
+    <div class="background-blur"></div>
+
+    <div class="library-content">
+        <!-- Header del Dashboard -->
+        <header class="library-header">
+            <div class="header-left">
+                <i class="bi bi-speedometer2 back-btn"></i>
+                <h1 class="page-title">Panel de Control</h1>
+            </div>
+
+            <div class="header-right">
+                <span class="user-name">Admin: {{ user.username }}</span>
+                <i class="bi bi-person-circle"></i>
+
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-light ms-2"
+                        style="border-radius: 20px; font-size: 0.7rem;">
+                        Cerrar Sesión
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <div class="library-main">
+            <!-- Sidebar -->
+            <aside class="library-sidebar">
+                <nav class="library-nav">
+                    <a href="{% url 'admin_dashboard' %}" class="nav-item active">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <div class="separator"
+                        style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+
+                    <a href="{% url 'lista_canciones' %}" class="nav-item">
+                        <i class="bi bi-music-note-beamed"></i>
+                        <span>Canciones</span>
+                    </a>
+
+                    <a href="{% url 'lista_artistas' %}" class="nav-item">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Artistas</span>
+                    </a>
+
+                    <a href="{% url 'lista_albums' %}" class="nav-item">
+                        <i class="bi bi-disc-fill"></i>
+                        <span>Álbumes</span>
+                    </a>
+
+                    <a href="{% url 'player' %}#playlists" class="nav-item">
+                        <i class="bi bi-music-note-list"></i>
+                        <span>Playlists</span>
+                    </a>
+
+                    <div class="separator"
+                        style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 0;"></div>
+
+                    <a href="{% url 'player' %}" class="nav-item">
+                        <i class="bi bi-house-door-fill"></i>
+                        <span>Ir al Sitio</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Contenido Principal -->
+            <main class="library-body">
+                <section class="library-section">
+                    <h2 class="section-title">Resumen del Sistema</h2>
+
+                    <div class="library-stats">
+                        <a href="{% url 'lista_canciones' %}" class="stat-card" style="text-decoration: none;">
+                            <i class="bi bi-music-note-beamed" style="color: #1DB954;"></i>
+                            <div>
+                                <h3>{{ total_canciones }}</h3>
+                                <p>Canciones</p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'lista_artistas' %}" class="stat-card" style="text-decoration: none;">
+                            <i class="bi bi-people" style="color: #b366ff;"></i>
+                            <div>
+                                <h3>{{ total_artistas|default:"--" }}</h3>
+                                <p>Artistas</p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'lista_albums' %}" class="stat-card" style="text-decoration: none;">
+                            <i class="bi bi-disc" style="color: #ff4757;"></i>
+                            <div>
+                                <h3>{{ total_albums|default:"--" }}</h3>
+                                <p>Álbumes</p>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="library-section">
+                    <h2 class="section-title">Acciones Rápidas</h2>
+
+                    <div class="items-grid">
+                        <a href="{% url 'crear_cancion' %}" class="item-card"
+                            style="text-decoration: none; align-items: center; justify-content: center; min-height: 150px;">
+                            <div class="playlist-icon"
+                                style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; background: #1DB954;">
+                                <i class="bi bi-plus" style="font-size: 30px;"></i>
+                            </div>
+                            <div class="item-info" style="text-align: center;">
+                                <div class="item-name">Nueva Canción</div>
+                                <div class="item-subtitle">Subir archivo</div>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'crear_artista' %}" class="item-card"
+                            style="text-decoration: none; align-items: center; justify-content: center; min-height: 150px;">
+                            <div class="playlist-icon"
+                                style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; background: #b366ff;">
+                                <i class="bi bi-plus" style="font-size: 30px;"></i>
+                            </div>
+                            <div class="item-info" style="text-align: center;">
+                                <div class="item-name">Nuevo Artista</div>
+                                <div class="item-subtitle">Registrar perfil</div>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'crear_album' %}" class="item-card"
+                            style="text-decoration: none; align-items: center; justify-content: center; min-height: 150px;">
+                            <div class="playlist-icon"
+                                style="width: 60px; height: 60px; border-radius: 50%; margin-bottom: 15px; background: #ff4757;">
+                                <i class="bi bi-plus" style="font-size: 30px;"></i>
+                            </div>
+                            <div class="item-info" style="text-align: center;">
+                                <div class="item-name">Nuevo Álbum</div>
+                                <div class="item-subtitle">Crear colección</div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}

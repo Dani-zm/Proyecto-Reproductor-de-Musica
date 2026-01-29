@@ -1,0 +1,54 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>Iniciar Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'music/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'music/css/login.css' %}">
+</head>
+
+<body>
+
+    <div class="login-wrap">
+        <div class="login-html">
+            <input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Iniciar
+                Sesión</label>
+            <input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab"></label>
+
+            <div class="login-form">
+                <!-- SIGN IN FORM -->
+                <form class="sign-in-htm" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="group">
+                        <label for="login_user" class="label">Nombre de usuario</label>
+                        <input id="login_user" name="username" type="text" class="input">
+                    </div>
+                    <div class="group">
+                        <label for="login_pass" class="label">Contraseña</label>
+                        <input id="login_pass" name="password" type="password" class="input" data-type="password">
+                    </div>
+                    <div class="group">
+                        <input type="submit" class="button" value="Iniciar Sesión">
+                    </div>
+                    <div class="hr"></div>
+                    <div class="foot-lnk">
+                        <a href="#forgot">¿Olvidaste tu contraseña?</a>
+                    </div>
+
+                    {% if form.errors and not form.email %}
+                    <div style="color:red; text-align:center;">
+                        <p>Usuario o contraseña inválidos</p>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,291 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+{% block title %}Tu biblioteca{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'music/css/style.css' %}">
+<link rel="icon" href="{% static 'music/img/favicon.ico' %}" type="image/x-icon">
+{% endblock %}
+
+{% block content %}
+<div class="library-container">
+  <!-- Fondo dinámico basado en la primera canción -->
+  {% with primera_cancion=canciones_recientes.first %}
+  {% if primera_cancion and primera_cancion.portada %}
+  <div class="background-blur" style="background-image: url('{{ primera_cancion.portada.url }}');"></div>
+  {% else %}
+  <div class="background-blur" style="background: linear-gradient(135deg, #14141c 0%, #050507 100%);"></div>
+  {% endif %}
+  {% endwith %}
+
+  <div class="library-content">
+    <!-- Header -->
+    <div class="library-header">
+      <div class="header-left">
+        <i class="bi bi-chevron-left back-btn" onclick="window.history.back()"></i>
+        <span class="page-title">Tu biblioteca</span>
+      </div>
+
+      <div class="search-wrapper">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" id="librarySearch" placeholder="Buscar en tu biblioteca..." autocomplete="off">
+        </div>
+      </div>
+
+      <div class="header-right">
+        {% if user.is_authenticated %}
+        <span class="user-name">{{ user.username }}</span>
+        {% for group in user.groups.all %}
+        <span class="badge bg-secondary" style="font-size: 0.7em;">{{ group.name }}</span>
+        {% endfor %}
+        <i class="bi bi-person-circle"></i>
+
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-light ms-2"
+            style="border-radius: 20px; font-size: 0.7rem;">Logout</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn btn-sm btn-primary" style="border-radius: 20px;">Login</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="library-main">
+      <!-- Sidebar -->
+      <div class="library-sidebar">
+        <nav class="library-nav">
+          <a href="#recientes" class="nav-item active">
+            <i class="bi bi-clock-history"></i>
+            <span>Recientes</span>
+          </a>
+          <a href="#artistas" class="nav-item">
+            <i class="bi bi-person-video3"></i>
+            <span>Artistas</span>
+          </a>
+          <a href="#albums" class="nav-item">
+            <i class="bi bi-disc"></i>
+            <span>Álbumes</span>
+          </a>
+          <a href="#playlists" class="nav-item">
+            <i class="bi bi-music-note-list"></i>
+            <span>Playlists</span>
+          </a>
+          <a href="#todas" class="nav-item">
+            <i class="bi bi-music-note-beamed"></i>
+            <span>Todas</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Cuerpo -->
+      <div class="library-body">
+
+        <!-- Sección: Canciones recientes -->
+        <div class="library-section" id="recientes">
+          <h2 class="section-title">Recientemente añadidas</h2>
+          <div class="items-grid">
+            {% for cancion in canciones_recientes %}
+            <div class="item-card cancion" onclick="playSong('{{ cancion.id }}')">
+              <div class="item-image">
+                {% if cancion.portada %}
+                <img src="{{ cancion.portada.url }}" alt="{{ cancion.titulo }}">
+                {% elif cancion.album and cancion.album.portada %}
+                <img src="{{ cancion.album.portada.url }}" alt="{{ cancion.titulo }}">
+                {% else %}
+                <div class="song-icon">
+                  <i class="bi bi-music-note-beamed"></i>
+                </div>
+                {% endif %}
+              </div>
+              <div class="item-info">
+                <h3 class="item-name">{{ cancion.titulo }}</h3>
+                <p class="item-subtitle">
+                  {% for artista in cancion.artistas.all %}
+                  {{ artista.nombre }}{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                  Sin artista
+                  {% endfor %}
+                </p>
+                <p class="item-duration">{{ cancion.minutos }}:{{ cancion.segundos|stringformat:"02d" }}</p>
+              </div>
+            </div>
+            {% empty %}
+            <div class="no-items">
+              <i class="bi bi-music-note-list"></i>
+              <p>No hay canciones recientes</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Artistas -->
+        <div class="library-section" id="artistas">
+          <h2 class="section-title">Artistas ({{ total_artistas }})</h2>
+          <div class="items-grid">
+            {% for artista in artistas %}
+            <div class="item-card artist" onclick="openArtist('{{ artista.id }}')">
+              <div class="item-image">
+                {% if artista.imagen %}
+                <img src="{{ artista.imagen.url }}" alt="{{ artista.nombre }}">
+                {% else %}
+                <!-- Mostrar primera letra del nombre si no hay imagen -->
+                <div class="artist-avatar">
+                  <span>{{ artista.nombre|slice:":1"|upper }}</span>
+                </div>
+                {% endif %}
+              </div>
+              <div class="item-info">
+                <h3 class="item-name">{{ artista.nombre }}</h3>
+                <p class="item-subtitle">
+                  {% if artista.num_canciones == 1 %}
+                  1 canción
+                  {% else %}
+                  {{ artista.num_canciones }} canciones
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            {% empty %}
+            <div class="no-items">
+              <i class="bi bi-person-x"></i>
+              <p>No hay artistas aún</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Álbumes -->
+        <div class="library-section" id="albums">
+          <h2 class="section-title">Álbumes ({{ total_albums }})</h2>
+          <div class="items-grid">
+            {% for album in albums %}
+            <div class="item-card album" onclick="openAlbum('{{ album.id }}')">
+              <div class="item-image">
+                {% if album.portada %}
+                <img src="{{ album.portada.url }}" alt="{{ album.titulo }}">
+                {% else %}
+                <div class="album-icon">
+                  <i class="bi bi-disc"></i>
+                </div>
+                {% endif %}
+              </div>
+              <div class="item-info">
+                <h3 class="item-name">{{ album.titulo }}</h3>
+                <p class="item-subtitle">
+                  {% for artista in album.artistas.all %}
+                  {{ artista.nombre }}{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                  Varios artistas
+                  {% endfor %}
+                </p>
+                {% if album.fecha_lanzamiento %}
+                <p class="item-year">{{ album.fecha_lanzamiento|date:"Y" }}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% empty %}
+            <div class="no-items">
+              <i class="bi bi-disc"></i>
+              <p>No hay álbumes aún</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Playlists -->
+        <div class="library-section" id="playlists">
+          <h2 class="section-title">Playlists</h2>
+          <div class="items-grid">
+            {% for playlist in playlists %}
+            <div class="item-card playlist" onclick="openPlaylist('{{ playlist.id }}')">
+              <div class="item-image">
+                <div class="playlist-icon" style="background: {{ playlist.color }};">
+                  <i class="bi bi-{{ playlist.tipo_icono|default:'music-note-beamed' }}"></i>
+                </div>
+              </div>
+              <div class="item-info">
+                <h3 class="item-name">{{ playlist.nombre }}</h3>
+                <p class="item-subtitle">{{ playlist.descripcion }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Sección: Todas las canciones -->
+        <div class="library-section" id="todas">
+          <h2 class="section-title">Todas las canciones ({{ total_canciones }})</h2>
+          <div class="songs-list">
+            {% for cancion in todas_las_canciones %}
+            <div class="song-item" onclick="playSong('{{ cancion.id }}')">
+              <div class="song-number">{{ forloop.counter }}</div>
+              <div class="song-image">
+                {% if cancion.portada %}
+                <img src="{{ cancion.portada.url }}" alt="{{ cancion.titulo }}">
+                {% elif cancion.album and cancion.album.portada %}
+                <img src="{{ cancion.album.portada.url }}" alt="{{ cancion.titulo }}">
+                {% else %}
+                <div class="song-icon-small">
+                  <i class="bi bi-music-note-beamed"></i>
+                </div>
+                {% endif %}
+              </div>
+              <div class="song-info">
+                <h3 class="song-title">{{ cancion.titulo }}</h3>
+                <p class="song-artist">
+                  {% for artista in cancion.artistas.all %}
+                  {{ artista.nombre }}{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </p>
+              </div>
+              <div class="song-album">
+                {% if cancion.album %}
+                {{ cancion.album.titulo }}
+                {% else %}
+                Sin álbum
+                {% endif %}
+              </div>
+              <div class="song-duration">{{ cancion.minutos }}:{{ cancion.segundos|stringformat:"02d" }}</div>
+            </div>
+            {% empty %}
+            <div class="no-items">
+              <i class="bi bi-music-note-list"></i>
+              <p>No hay canciones en tu biblioteca</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="library-stats">
+          <div class="stat-card">
+            <i class="bi bi-music-note-beamed"></i>
+            <div>
+              <h3>{{ total_canciones }}</h3>
+              <p>Canciones</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <i class="bi bi-person-circle"></i>
+            <div>
+              <h3>{{ total_artistas }}</h3>
+              <p>Artistas</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <i class="bi bi-disc"></i>
+            <div>
+              <h3>{{ total_albums }}</h3>
+              <p>Álbumes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

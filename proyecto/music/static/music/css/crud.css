@@ -1,0 +1,184 @@
+/* ===== CRUD GENERAL STYLES ===== */
+
+/* Enable scrolling for CRUD pages */
+html,
+body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+}
+
+.crud-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.crud-card {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+}
+
+.crud-card-form {
+    max-width: 600px;
+}
+
+.crud-card-delete {
+    max-width: 450px;
+}
+
+.crud-title {
+    background: linear-gradient(135deg, #b366ff 0%, #e056fd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* ===== FORM CONTROLS ===== */
+
+.form-label {
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+input.form-control,
+textarea.form-control,
+select.form-control {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #b366ff;
+    box-shadow: 0 0 0 0.2rem rgba(179, 102, 255, 0.25);
+}
+
+/* File inputs */
+input[type="file"].form-control {
+    color: #aaa;
+    padding: 8px;
+}
+
+/* Checkbox / Switch */
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #b366ff;
+    border-color: #b366ff;
+}
+
+/* ===== BUTTONS ===== */
+
+.btn-crud-save {
+    background: #b366ff;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    padding: 10px 40px;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-crud-save:hover {
+    background: #c991ff;
+    transform: scale(1.05);
+}
+
+.btn-crud-cancel {
+    border-radius: 20px;
+    padding: 10px 30px;
+}
+
+/* ===== LIST REFINEMENTS ===== */
+
+.btn-action-circle {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.song-item.header {
+    color: #888;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    align-items: center;
+}
+
+.badge-count {
+    background-color: #6c757d;
+}
+
+.pagination .page-link {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: white;
+}
+
+.pagination .page-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #b366ff;
+}
+
+/* Standard Grids for Layout Alignment */
+.grid-artistas {
+    display: grid !important;
+    grid-template-columns: 60px 2fr 1fr 1fr;
+    gap: 15px;
+    align-items: center;
+}
+
+.grid-albums {
+    display: grid !important;
+    grid-template-columns: 60px 2fr 1fr 1fr 1fr 1fr;
+    gap: 15px;
+    align-items: center;
+}
+
+.grid-canciones {
+    display: grid !important;
+    grid-template-columns: 60px 2fr 1fr 1fr 60px 80px;
+    gap: 15px;
+    align-items: center;
+}
+
+@media (max-width: 992px) {
+
+    .grid-artistas,
+    .grid-albums,
+    .grid-canciones {
+        grid-template-columns: 60px 1fr auto !important;
+    }
+
+    .song-artist-name,
+    .song-year,
+    .song-status,
+    .song-duration,
+    .song-album-name,
+    .song-stats {
+        display: none;
+    }
+}

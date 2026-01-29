@@ -1,0 +1,658 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ album.titulo }} - Music App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, #1a1a1a 0%, #121212 100%);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Header con gradiente */
+        .album-header {
+            position: relative;
+            padding: 80px 0 24px;
+            background: linear-gradient(180deg, rgba(88, 28, 135, 0.6) 0%, rgba(18, 18, 18, 0.8) 100%);
+            overflow: hidden;
+        }
+
+        .album-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            {% if album.portada %}
+            background: url('{{ album.portada.url }}') center/cover no-repeat;
+            {% else %}
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            {% endif %}
+            filter: blur(50px) brightness(0.3);
+            z-index: -1;
+        }
+
+        .album-info {
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+            padding: 0 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .album-cover {
+            width: 232px;
+            height: 232px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .album-cover-placeholder {
+            width: 232px;
+            height: 232px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 96px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .album-details {
+            flex: 1;
+        }
+
+        .album-type {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .album-details h1 {
+            font-size: 72px;
+            font-weight: 900;
+            margin: 0 0 16px 0;
+            line-height: 1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .album-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .artist-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            transition: text-decoration 0.3s ease;
+        }
+
+        .artist-link:hover {
+            text-decoration: underline;
+        }
+
+        .meta-separator {
+            color: #b3b3b3;
+        }
+
+        .meta-info {
+            color: #b3b3b3;
+        }
+
+        /* Controles de acción */
+        .album-actions {
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-play {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #1db954;
+            border: none;
+            color: #000;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-play:hover {
+            transform: scale(1.06);
+            background: #1ed760;
+        }
+
+        .btn-save {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            color: #b3b3b3;
+            font-size: 32px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .btn-save:hover {
+            color: #1db954;
+        }
+
+        .btn-save.saved {
+            color: #1db954;
+        }
+
+        .btn-more {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #b3b3b3;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .btn-more:hover {
+            color: #fff;
+        }
+
+        /* Contenido principal */
+        .album-content {
+            padding: 0 32px 80px;
+        }
+
+        /* Lista de canciones */
+        .tracklist-header {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 80px;
+            gap: 16px;
+            padding: 8px 16px;
+            color: #b3b3b3;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+        }
+
+        .song-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .song-item {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr 80px;
+            gap: 16px;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-number {
+            color: #b3b3b3;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .song-item:hover .song-number {
+            display: none;
+        }
+
+        .song-play-icon {
+            display: none;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .song-item:hover .song-play-icon {
+            display: block;
+        }
+
+        .song-info h4 {
+            font-size: 16px;
+            font-weight: 400;
+            margin: 0;
+            color: #fff;
+        }
+
+        .song-info p {
+            font-size: 14px;
+            color: #b3b3b3;
+            margin: 0;
+        }
+
+        .song-artist {
+            color: #b3b3b3;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .song-artist:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .song-duration {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: flex-end;
+        }
+
+        .song-like {
+            color: #b3b3b3;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            font-size: 16px;
+        }
+
+        .song-like:hover {
+            color: #fff;
+        }
+
+        .duration-text {
+            color: #b3b3b3;
+            font-size: 14px;
+        }
+
+        /* Info del álbum */
+        .album-footer {
+            margin-top: 48px;
+            color: #b3b3b3;
+            font-size: 14px;
+        }
+
+        .album-date {
+            margin-bottom: 8px;
+        }
+
+        .album-copyright {
+            margin-bottom: 16px;
+        }
+
+        /* Descripción */
+        .album-description {
+            margin-top: 32px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .album-description h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .album-description p {
+            color: #b3b3b3;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Navegación superior */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-back {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .nav-back:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* Estado vacío */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #b3b3b3;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Artistas relacionados */
+        .related-artists {
+            margin-top: 48px;
+        }
+
+        .related-artists h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .artists-list {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .artist-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            text-decoration: none;
+            color: #fff;
+            transition: background 0.3s ease;
+        }
+
+        .artist-chip:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .artist-chip i {
+            font-size: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .album-details h1 {
+                font-size: 32px;
+            }
+
+            .album-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .album-cover,
+            .album-cover-placeholder {
+                width: 192px;
+                height: 192px;
+            }
+
+            .tracklist-header,
+            .song-item {
+                grid-template-columns: 40px 1fr 60px;
+            }
+
+            .song-artist {
+                display: none;
+            }
+
+            .tracklist-header .header-artist {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navegación superior -->
+    <nav class="top-nav">
+        <button class="nav-back" onclick="window.history.back()">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <div style="flex: 1;"></div>
+    </nav>
+
+    <!-- Header del álbum -->
+    <div class="album-header">
+        <div class="album-info">
+            {% if album.portada %}
+                <img src="{{ album.portada.url }}" alt="{{ album.titulo }}" class="album-cover">
+            {% else %}
+                <div class="album-cover-placeholder">
+                    <i class="bi bi-disc"></i>
+                </div>
+            {% endif %}
+            
+            <div class="album-details">
+                <div class="album-type">Álbum</div>
+                <h1>{{ album.titulo }}</h1>
+                <div class="album-meta">
+                    {% for artista in artistas %}
+                        <a href="{% url 'artista_detalle' artista.id %}" class="artist-link">{{ artista.nombre }}</a>
+                        {% if not forloop.last %}
+                            <span class="meta-separator">•</span>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <span class="meta-separator">•</span>
+                    {% if album.fecha_lanzamiento %}
+                        <span class="meta-info">{{ album.fecha_lanzamiento.year }}</span>
+                        <span class="meta-separator">•</span>
+                    {% endif %}
+                    <span class="meta-info">{{ total_canciones }} canción{{ total_canciones|pluralize:"es" }}</span>
+                    {% if duracion_total %}
+                        <span class="meta-separator">•</span>
+                        <span class="meta-info">{{ duracion_total }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones del álbum -->
+    <div class="album-actions">
+        {% if canciones %}
+            <button class="btn-play" onclick="playFirstSong()">
+                <i class="bi bi-play-fill"></i>
+            </button>
+        {% endif %}
+        <button class="btn-save" id="saveBtn">
+            <i class="bi bi-heart"></i>
+        </button>
+        <button class="btn-more">
+            <i class="bi bi-three-dots"></i>
+        </button>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="album-content">
+        {% if canciones %}
+            <!-- Header de la lista -->
+            <div class="tracklist-header">
+                <div>#</div>
+                <div>Título</div>
+                <div class="header-artist">Artista</div>
+                <div style="text-align: right;"><i class="bi bi-clock"></i></div>
+            </div>
+
+            <!-- Lista de canciones -->
+            <ul class="song-list">
+                {% for cancion in canciones %}
+                <li class="song-item" onclick="playSong({{ cancion.id }})">
+                    <div style="position: relative; text-align: center;">
+                        <span class="song-number">{{ forloop.counter }}</span>
+                        <i class="bi bi-play-fill song-play-icon"></i>
+                    </div>
+                    
+                    <div class="song-info">
+                        <h4>{{ cancion.titulo }}</h4>
+                        <p>{{ cancion.reproducciones|default:0 }} reproducciones</p>
+                    </div>
+                    
+                    <div>
+                        {% if cancion.artistas.all %}
+                            {% for artista in cancion.artistas.all %}
+                                <a href="{% url 'artista_detalle' artista.id %}" 
+                                   class="song-artist" 
+                                   onclick="event.stopPropagation()">
+                                    {{ artista.nombre }}
+                                </a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span class="song-artist">Desconocido</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="song-duration">
+                        <i class="bi bi-heart song-like" onclick="event.stopPropagation(); toggleLike(this)"></i>
+                        <span class="duration-text">{{ cancion.duracion_formateada }}</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Footer del álbum -->
+            <div class="album-footer">
+                {% if album.fecha_lanzamiento %}
+                    <div class="album-date">
+                        {{ album.fecha_lanzamiento|date:"d de F de Y" }}
+                    </div>
+                {% endif %}
+                <div class="album-copyright">
+                    ℗ {{ album.fecha_lanzamiento.year|default:"2024" }} 
+                    {% if artistas %}{{ artistas.first.nombre }}{% endif %}
+                </div>
+            </div>
+
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-music-note-list"></i>
+                <h3>No hay canciones disponibles</h3>
+                <p>Este álbum aún no tiene canciones publicadas.</p>
+            </div>
+        {% endif %}
+
+        <!-- Descripción del álbum -->
+        {% if album.descripcion %}
+            <div class="album-description">
+                <h3>Acerca de este álbum</h3>
+                <p>{{ album.descripcion }}</p>
+            </div>
+        {% endif %}
+
+        <!-- Artistas relacionados -->
+        {% if artistas %}
+            <div class="related-artists">
+                <h2>Artistas</h2>
+                <div class="artists-list">
+                    {% for artista in artistas %}
+                        <a href="{% url 'artista_detalle' artista.id %}" class="artist-chip">
+                            <i class="bi bi-person-circle"></i>
+                            <span>{{ artista.nombre }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function playSong(songId) {
+            // Redirigir al reproductor con la canción seleccionada
+            window.location.href = `/player/?id=${songId}`;
+        }
+
+        function playFirstSong() {
+            {% if canciones %}
+                playSong({{ canciones.first.id }});
+            {% endif %}
+        }
+
+        function toggleLike(element) {
+            element.classList.toggle('bi-heart');
+            element.classList.toggle('bi-heart-fill');
+            
+            if (element.classList.contains('bi-heart-fill')) {
+                element.style.color = '#1db954';
+            } else {
+                element.style.color = '#b3b3b3';
+            }
+        }
+
+        // Toggle guardar álbum
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            this.classList.toggle('saved');
+            const icon = this.querySelector('i');
+            icon.classList.toggle('bi-heart');
+            icon.classList.toggle('bi-heart-fill');
+        });
+
+        // Efecto parallax suave en el header
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.album-header');
+            const scrolled = window.pageYOffset;
+            header.style.transform = `translateY(${scrolled * 0.5}px)`;
+        });
+
+        // Formatear fecha en español
+        const months = {
+            'January': 'enero', 'February': 'febrero', 'March': 'marzo',
+            'April': 'abril', 'May': 'mayo', 'June': 'junio',
+            'July': 'julio', 'August': 'agosto', 'September': 'septiembre',
+            'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends 'music/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Álbumes{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'music/css/crud.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="library-container">
+    <div class="background-blur"></div>
+
+    <div class="library-content">
+        <!-- Header -->
+        <header class="library-header">
+            <div class="header-left">
+                <a href="{% url 'admin_dashboard' %}" class="back-btn"><i class="bi bi-arrow-left"></i></a>
+                <h1 class="page-title">Álbumes</h1>
+            </div>
+            <a href="{% url 'crear_album' %}" class="btn btn-primary btn-crud-save px-3 py-2"
+                style="background: #ff4757;">
+                <i class="bi bi-plus-lg"></i> Nuevo Álbum
+            </a>
+        </header>
+
+        <div class="library-main">
+            <!-- Sidebar -->
+            <aside class="library-sidebar">
+                <nav class="library-nav">
+                    <a href="{% url 'admin_dashboard' %}" class="nav-item">
+                        <i class="bi bi-grid-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'lista_canciones' %}" class="nav-item">
+                        <i class="bi bi-music-note-beamed"></i>
+                        <span>Canciones</span>
+                    </a>
+                    <a href="{% url 'lista_artistas' %}" class="nav-item">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Artistas</span>
+                    </a>
+                    <a href="{% url 'lista_albums' %}" class="nav-item active">
+                        <i class="bi bi-disc-fill"></i>
+                        <span>Álbumes</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Lista -->
+            <main class="library-body">
+                <div class="songs-list">
+                    <div class="song-item header grid-albums">
+                        <div class="song-number">IMG</div>
+                        <div class="song-title">TÍTULO</div>
+                        <div class="song-artist">ARTISTA</div>
+                        <div class="song-album">AÑO</div>
+                        <div class="song-album">ESTADO</div>
+                        <div class="actions">ACCIONES</div>
+                    </div>
+
+                    {% for album in albums %}
+                    <div class="song-item grid-albums">
+                        <div class="song-image">
+                            {% if album.portada %}
+                            <img src="{{ album.portada.url }}" alt="{{ album.titulo }}">
+                            {% else %}
+                            <div class="album-icon">
+                                <i class="bi bi-disc"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="song-info">
+                            <h4 class="song-title">{{ album.titulo }}</h4>
+                        </div>
+
+                        <div class="song-artist-name">
+                            <span style="color: #aaa; font-size: 14px;">{{ album.artistas_nombres }}</span>
+                        </div>
+
+                        <div class="song-year">
+                            {{ album.fecha_lanzamiento|date:"Y" }}
+                        </div>
+
+                        <div class="song-status">
+                            {% if album.activo %}
+                            <span class="badge bg-success" style="font-size: 10px;">Activo</span>
+                            {% else %}
+                            <span class="badge badge-count" style="font-size: 10px;">Inactivo</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="actions d-flex gap-2">
+                            <a href="{% url 'editar_album' album.id %}"
+                                class="btn btn-sm btn-outline-info btn-action-circle">
+                                <i class="bi bi-pencil-fill" style="font-size: 12px;"></i>
+                            </a>
+                            <a href="{% url 'eliminar_album' album.id %}"
+                                class="btn btn-sm btn-outline-danger btn-action-circle">
+                                <i class="bi bi-trash-fill" style="font-size: 12px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="no-items">
+                        <i class="bi bi-disc"></i>
+                        <p>No hay álbumes registrados.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% include 'music/crud/pagination.html' %}
+            </main>
+        </div>
+    </div>
+</div>
+{% endblock %}
