@@ -359,12 +359,18 @@ def album_detalle(request, album_id):
     duracion_total_minutos += duracion_total_segundos // 60
     duracion_total_segundos = duracion_total_segundos % 60
     
+    # Calcular valor de fondo (solo el valor para evitar errores de sintaxis en el template)
+    background_value = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+    if album.portada:
+        background_value = f"url('{album.portada.url}')"
+
     context = {
         'album': album,
         'canciones': canciones,
         'artistas': artistas,
         'total_canciones': canciones.count(),
         'duracion_total': f"{duracion_total_minutos}:{str(duracion_total_segundos).zfill(2)}",
+        'background_value': background_value,
     }
     
     return render(request, 'music/album_detalle.html', context)

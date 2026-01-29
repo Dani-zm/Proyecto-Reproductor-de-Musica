@@ -29,18 +29,15 @@
             overflow: hidden;
         }
 
-        .album-header::before {
-            content: '';
+        .album-background {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            {% if album.portada %}
-            background: url('{{ album.portada.url }}') center/cover no-repeat;
-            {% else %}
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            {% endif %}
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
             filter: blur(50px) brightness(0.3);
             z-index: -1;
         }
@@ -465,6 +462,14 @@
 
     <!-- Header del álbum -->
     <div class="album-header">
+        <div class="album-background" id="album-bg" data-bg="{{ background_value }}"></div>
+        <script>
+            // Aplicar fondo dinámico evitando conflictos con el linter
+            const bgElement = document.getElementById('album-bg');
+            if (bgElement && bgElement.dataset.bg) {
+                bgElement.style.backgroundImage = bgElement.dataset.bg;
+            }
+        </script>
         <div class="album-info">
             {% if album.portada %}
                 <img src="{{ album.portada.url }}" alt="{{ album.titulo }}" class="album-cover">
@@ -503,7 +508,7 @@
     <!-- Acciones del álbum -->
     <div class="album-actions">
         {% if canciones %}
-            <button class="btn-play" onclick="playFirstSong()">
+            <button class="btn-play" onclick="playSong('{{ canciones.first.id }}')">
                 <i class="bi bi-play-fill"></i>
             </button>
         {% endif %}
@@ -529,7 +534,7 @@
             <!-- Lista de canciones -->
             <ul class="song-list">
                 {% for cancion in canciones %}
-                <li class="song-item" onclick="playSong({{ cancion.id }})">
+                <li class="song-item" onclick="playSong('{{ cancion.id }}')">
                     <div style="position: relative; text-align: center;">
                         <span class="song-number">{{ forloop.counter }}</span>
                         <i class="bi bi-play-fill song-play-icon"></i>
@@ -614,11 +619,7 @@
             window.location.href = `/player/?id=${songId}`;
         }
 
-        function playFirstSong() {
-            {% if canciones %}
-                playSong({{ canciones.first.id }});
-            {% endif %}
-        }
+
 
         function toggleLike(element) {
             element.classList.toggle('bi-heart');
