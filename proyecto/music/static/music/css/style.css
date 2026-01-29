@@ -179,6 +179,7 @@ body {
 /* BARRA */
 .playbar {
   height: 6px;
+  box-sizing: content-box;
   background: rgba(255, 255, 255, 0.12);
   border-radius: 5px;
   cursor: pointer;
